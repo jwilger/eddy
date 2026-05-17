@@ -70,6 +70,20 @@
           buildInputs = commonBuildInputs;
           nativeBuildInputs = commonNativeBuildInputs;
         };
+
+        opencodeTestDeps = pkgs.buildNpmPackage {
+          pname = "eddy-opencode-test-deps";
+          version = "0.1.0";
+          src = ./nix/opencode-test-deps;
+          npmDepsHash = "sha256-hiNLZRpu5ZeLLU+oDBQEq5d7LPpETnw/3ZHCuRfbo7U=";
+          dontNpmBuild = true;
+          installPhase = ''
+            runHook preInstall
+            mkdir -p "$out"
+            cp -R node_modules "$out/node_modules"
+            runHook postInstall
+          '';
+        };
       in
       {
         packages = pkgs.lib.optionalAttrs hasCargoProject {
@@ -119,6 +133,12 @@
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
           OPENSSL_NO_VENDOR = "1";
           PKG_CONFIG_PATH = pkgs.lib.makeSearchPath "lib/pkgconfig" commonBuildInputs;
+
+          shellHook = ''
+            if [ ! -e .opencode/node_modules ]; then
+              ln -s ${opencodeTestDeps}/node_modules .opencode/node_modules
+            fi
+          '';
         };
       });
 }

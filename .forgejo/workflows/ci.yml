@@ -83,11 +83,6 @@ jobs:
 
       - *install_nix
 
-      - name: Install opencode plugin dependencies
-        run: |
-          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
-          nix develop --command npm --prefix .opencode ci
-
       - name: Run just test
         run: |
           export PATH="/nix/var/nix/profiles/default/bin:$PATH"
