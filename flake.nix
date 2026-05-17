@@ -92,6 +92,7 @@
             forgejo-mcp
             jq
             just
+            lefthook
             nodejs
             openssl
             pkg-config

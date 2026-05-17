@@ -1,0 +1,11 @@
+pre-commit:
+  commands:
+    fmt:
+      run: just fmt
+    clippy:
+      run: just clippy
+
+pre-push:
+  commands:
+    test:
+      run: just test

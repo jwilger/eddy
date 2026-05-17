@@ -27,4 +27,13 @@ event-model-validate:
 event-model-generate:
 	npm --prefix docs/event-model/browser run generate
 
+hooks-install:
+	lefthook install
+
+hooks-pre-commit:
+	lefthook run pre-commit --all-files
+
+hooks-pre-push:
+	lefthook run pre-push
+
 ci: fmt clippy test deny build
