@@ -1,4 +1,5 @@
 set shell := ["sh", "-eu", "-c"]
+set quiet := true
 
 fmt:
 	if [ -f Cargo.toml ]; then cargo fmt --all --check; else printf '%s\n' 'No Cargo.toml; skipping Rust fmt'; fi
