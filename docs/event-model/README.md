@@ -6,16 +6,16 @@ Workflow models live in `docs/event-model/workflows/` as `*.eventmodel.json` fil
 
 Use the project-local opencode `event-modeler` agent to facilitate new modeling sessions. That agent keeps the discussion in business language, creates workflow JSON after the behavior is understood, and validates information completeness before the model is treated as ready.
 
-Validate a workflow model with:
+Validate workflow models with:
 
 ```sh
-python3 scripts/validate_event_model.py docs/event-model/workflows/<workflow>.eventmodel.json
+npm --prefix docs/event-model/browser run validate
 ```
 
-Render a workflow model with:
+Generate the event model browser with:
 
 ```sh
-python3 scripts/render_event_model.py docs/event-model/workflows/<workflow>.eventmodel.json > docs/event-model/generated/<workflow>.html
+npm --prefix docs/event-model/browser run generate
 ```
 
 Do not add placeholder workflows or invented event vocabularies just to populate this directory. If a workflow has not been modeled with the user, leave it absent.

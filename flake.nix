@@ -91,6 +91,7 @@
             cargo-watch
             jq
             just
+            nodejs
             openssl
             pkg-config
             sqlite

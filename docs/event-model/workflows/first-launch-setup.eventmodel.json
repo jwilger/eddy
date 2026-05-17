@@ -1,6 +1,6 @@
 {
   "name": "First launch setup",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A new learner launches Eddy in the terminal, provides a friendly display name, configures OpenAI access, verifies the connection, and is taken to Lesson 1.",
   "scope": "Covers the setup path that runs when Eddy does not yet have valid learner setup: the learner provides a required display name, provides or accepts an OpenAI API key defaulted from OPENAI_API_KEY, Eddy verifies OpenAI access, stores the key encrypted at rest in SQLite, prepares the repository on lessons/lesson-1, and shows Lesson 1. Showing the setup screen, failed validation attempts, and quitting the app are UI behavior, not persisted facts in this workflow. Later lessons, global TUI keyboard shortcuts, support for non-OpenAI providers, subsequent setup edits, and detailed git recovery workflow design are out of scope for this workflow model.",
   "notes": [
@@ -88,7 +88,7 @@
         {
           "name": "learner_id",
           "type": "string",
-          "source": "read_model.saved_first_launch_setup.learner_id"
+          "source": "read_model.learner_setup_status.learner_id"
         },
         {
           "name": "lesson_id",
@@ -147,7 +147,7 @@
         "lesson_branch_name"
       ],
       "reads": [
-        "saved_first_launch_setup"
+        "learner_setup_status"
       ],
       "external_inputs": [
         "git_checkout_result"
@@ -159,8 +159,8 @@
   ],
   "read_models": [
     {
-      "name": "saved_first_launch_setup",
-      "description": "Persisted setup information Eddy uses after the OpenAI key has been verified.",
+      "name": "learner_setup_status",
+      "description": "Projection of whether Eddy has verified first-launch setup and the setup values needed by later app behavior.",
       "fields": [
         {
           "name": "learner_id",
@@ -193,8 +193,8 @@
       ]
     },
     {
-      "name": "lesson_one_screen",
-      "description": "The first lesson screen shown after setup finishes and the repository is on the Lesson 1 branch.",
+      "name": "lesson_one_context",
+      "description": "Projection used to render Lesson 1 after setup is complete and the repository is on the Lesson 1 branch.",
       "fields": [
         {
           "name": "learner_id",
@@ -219,77 +219,317 @@
       ]
     }
   ],
+  "views": [
+    {
+      "name": "first_launch_setup_screen",
+      "description": "The terminal screen shown when Eddy cannot continue because learner setup is missing or saved OpenAI access is invalid.",
+      "uses_read_models": [
+        "learner_setup_status"
+      ],
+      "uses_events": [],
+      "wireframe": "Welcome to Eddy\n\nWhat should I call you?\n[ required display name input ]\n\nOpenAI API key\n[ defaults from OPENAI_API_KEY when present; learner may override ]\n\n[ Continue ]\n\nPress Ctrl+C twice to quit.",
+      "fields": [
+        {
+          "name": "display_name_input",
+          "description": "Required. Any non-empty value is accepted and later used verbatim in course text."
+        },
+        {
+          "name": "openai_api_key_input",
+          "description": "Required. Defaults from OPENAI_API_KEY when present and can be overridden."
+        },
+        {
+          "name": "inline_error_message",
+          "description": "Shown when display name is empty or OpenAI access cannot be verified."
+        }
+      ]
+    },
+    {
+      "name": "lesson_one_screen",
+      "description": "The first lesson screen shown after setup finishes and the repository is on the Lesson 1 branch.",
+      "uses_read_models": [
+        "lesson_one_context"
+      ],
+      "uses_events": [],
+      "wireframe": "Hi {display_name}!\n\nLesson 1: Basic LLM Chat\n\nEddy has prepared branch lessons/lesson-1.\n\n[ lesson instructions and chat area ]",
+      "fields": [
+        {
+          "name": "display_name",
+          "source": "FirstLaunchSetupCompleted.display_name"
+        },
+        {
+          "name": "lesson_id",
+          "source": "LessonOneBranchCheckedOut.lesson_id"
+        },
+        {
+          "name": "lesson_branch_name",
+          "source": "LessonOneBranchCheckedOut.lesson_branch_name"
+        }
+      ]
+    }
+  ],
+  "board": {
+    "lanes": [
+      {
+        "id": "ux",
+        "name": "UX / Automations"
+      },
+      {
+        "id": "actions",
+        "name": "Commands, Projections, Queries"
+      },
+      {
+        "id": "events",
+        "name": "Learner Configuration / Workspace Event Streams"
+      }
+    ],
+    "slices": [
+      {
+        "name": "Show first-launch setup",
+        "type": "state_view",
+        "elements": [
+          {
+            "id": "setup_screen",
+            "kind": "view",
+            "name": "first_launch_setup_screen",
+            "lane": "ux"
+          },
+          {
+            "id": "setup_status_projection",
+            "kind": "read_model",
+            "name": "learner_setup_status",
+            "lane": "actions"
+          }
+        ],
+        "connections": [
+          {
+            "from": "setup_status_projection",
+            "to": "setup_screen"
+          }
+        ]
+      },
+      {
+        "name": "Complete first-launch setup",
+        "type": "state_change",
+        "elements": [
+          {
+            "id": "setup_screen",
+            "kind": "view",
+            "name": "first_launch_setup_screen",
+            "lane": "ux"
+          },
+          {
+            "id": "complete_setup_command",
+            "kind": "command",
+            "name": "CompleteFirstLaunchSetup",
+            "lane": "actions"
+          },
+          {
+            "id": "setup_completed_event",
+            "kind": "event",
+            "name": "FirstLaunchSetupCompleted",
+            "lane": "events"
+          }
+        ],
+        "connections": [
+          {
+            "from": "setup_screen",
+            "to": "complete_setup_command"
+          },
+          {
+            "from": "complete_setup_command",
+            "to": "setup_completed_event"
+          }
+        ]
+      },
+      {
+        "name": "Prepare Lesson 1 workspace",
+        "type": "automation",
+        "elements": [
+          {
+            "id": "setup_completed_event",
+            "kind": "event",
+            "name": "FirstLaunchSetupCompleted",
+            "lane": "events"
+          },
+          {
+            "id": "setup_status_projection",
+            "kind": "read_model",
+            "name": "learner_setup_status",
+            "lane": "actions"
+          },
+          {
+            "id": "lesson_workspace_preparer",
+            "kind": "automation",
+            "name": "Lesson Workspace Preparer",
+            "lane": "ux"
+          },
+          {
+            "id": "start_lesson_one_command",
+            "kind": "command",
+            "name": "StartLessonOne",
+            "lane": "actions"
+          },
+          {
+            "id": "lesson_one_branch_checked_out_event",
+            "kind": "event",
+            "name": "LessonOneBranchCheckedOut",
+            "lane": "events"
+          }
+        ],
+        "connections": [
+          {
+            "from": "setup_completed_event",
+            "to": "setup_status_projection"
+          },
+          {
+            "from": "setup_status_projection",
+            "to": "lesson_workspace_preparer"
+          },
+          {
+            "from": "lesson_workspace_preparer",
+            "to": "start_lesson_one_command"
+          },
+          {
+            "from": "start_lesson_one_command",
+            "to": "lesson_one_branch_checked_out_event"
+          }
+        ]
+      },
+      {
+        "name": "Show Lesson 1",
+        "type": "state_view",
+        "elements": [
+          {
+            "id": "setup_completed_event",
+            "kind": "event",
+            "name": "FirstLaunchSetupCompleted",
+            "lane": "events"
+          },
+          {
+            "id": "lesson_one_branch_checked_out_event",
+            "kind": "event",
+            "name": "LessonOneBranchCheckedOut",
+            "lane": "events"
+          },
+          {
+            "id": "lesson_one_context_projection",
+            "kind": "read_model",
+            "name": "lesson_one_context",
+            "lane": "actions"
+          },
+          {
+            "id": "lesson_one_screen",
+            "kind": "view",
+            "name": "lesson_one_screen",
+            "lane": "ux"
+          }
+        ],
+        "connections": [
+          {
+            "from": "setup_completed_event",
+            "to": "lesson_one_context_projection"
+          },
+          {
+            "from": "lesson_one_branch_checked_out_event",
+            "to": "lesson_one_context_projection"
+          },
+          {
+            "from": "lesson_one_context_projection",
+            "to": "lesson_one_screen"
+          }
+        ]
+      }
+    ]
+  },
   "slices": [
     {
       "type": "state_view",
-      "name": "Show setup when learner setup is missing or invalid",
+      "name": "Show first-launch setup",
       "commands": [],
-      "events": [
-        "FirstLaunchSetupCompleted"
-      ],
+      "events": [],
       "read_models": [
-        "saved_first_launch_setup"
+        "learner_setup_status"
       ],
-      "given": [],
-      "then": [
-        "when no saved_first_launch_setup exists, Eddy shows a greeting, required display name input, OpenAI API key input, OPENAI_API_KEY default if present, option to override the default, and submit action",
-        "when saved OpenAI access can no longer be verified on launch, Eddy shows setup again with an inline message and lets the learner correct the key",
-        "showing this screen and dismissing it are UI behavior and are not recorded as events"
+      "views": [
+        "first_launch_setup_screen"
+      ],
+      "scenarios": [
+        {
+          "name": "No setup exists yet",
+          "given": [],
+          "then": [
+            "Eddy shows the setup screen with greeting, required display name input, OpenAI API key input, OPENAI_API_KEY default if present, option to override the default, and continue action."
+          ]
+        },
+        {
+          "name": "Saved OpenAI access no longer verifies",
+          "given": [
+            "FirstLaunchSetupCompleted"
+          ],
+          "then": [
+            "Eddy shows the setup screen again with an inline message and lets the learner correct the API key."
+          ]
+        },
+        {
+          "name": "Valid setup already exists",
+          "given": [
+            "FirstLaunchSetupCompleted",
+            "saved OpenAI access verifies successfully on launch"
+          ],
+          "then": [
+            "Eddy does not show the setup screen.",
+            "Eddy continues to the learner's current app location."
+          ]
+        }
       ]
     },
     {
       "type": "state_change",
-      "name": "Reject setup with missing display name",
-      "commands": [
-        "CompleteFirstLaunchSetup"
-      ],
-      "events": [],
-      "read_models": [],
-      "given": [],
-      "when": "CompleteFirstLaunchSetup with an empty display_name",
-      "then": [
-        "the command is rejected before testing OpenAI",
-        "no FirstLaunchSetupCompleted event is recorded",
-        "the setup screen shows an inline message asking the learner to enter a name"
-      ]
-    },
-    {
-      "type": "state_change",
-      "name": "Reject setup when OpenAI cannot be verified",
-      "commands": [
-        "CompleteFirstLaunchSetup"
-      ],
-      "events": [],
-      "read_models": [],
-      "given": [],
-      "when": "CompleteFirstLaunchSetup with a non-empty display_name and an API key that OpenAI rejects or cannot be reached with",
-      "then": [
-        "the command is rejected without recording FirstLaunchSetupCompleted",
-        "the setup screen shows an inline error and lets the learner retry",
-        "the failed key is not stored"
-      ]
-    },
-    {
-      "type": "state_change",
-      "name": "Complete setup with verified OpenAI access",
+      "name": "Complete first-launch setup",
       "commands": [
         "CompleteFirstLaunchSetup"
       ],
       "events": [
         "FirstLaunchSetupCompleted"
       ],
-      "read_models": [
-        "saved_first_launch_setup"
+      "read_models": [],
+      "views": [
+        "first_launch_setup_screen"
       ],
-      "given": [],
-      "when": "CompleteFirstLaunchSetup with a non-empty display_name and an OpenAI API key that verifies successfully",
-      "then": [
-        "FirstLaunchSetupCompleted"
+      "scenarios": [
+        {
+          "name": "Valid setup values",
+          "given": [],
+          "when": "CompleteFirstLaunchSetup with a non-empty display_name and an OpenAI API key that verifies successfully",
+          "then": [
+            "FirstLaunchSetupCompleted"
+          ]
+        },
+        {
+          "name": "Display name is empty",
+          "given": [],
+          "when": "CompleteFirstLaunchSetup with an empty display_name",
+          "then": [
+            "The command is rejected before testing OpenAI.",
+            "No FirstLaunchSetupCompleted event is recorded.",
+            "The setup screen shows an inline message asking the learner to enter a name."
+          ]
+        },
+        {
+          "name": "OpenAI rejects or cannot verify the key",
+          "given": [],
+          "when": "CompleteFirstLaunchSetup with a non-empty display_name and an API key that OpenAI rejects or cannot be reached with",
+          "then": [
+            "The command is rejected without recording FirstLaunchSetupCompleted.",
+            "The setup screen shows an inline error and lets the learner retry.",
+            "The failed key is not stored."
+          ]
+        }
       ]
     },
     {
       "type": "automation",
-      "name": "Start Lesson 1 after setup completes",
+      "name": "Prepare Lesson 1 workspace",
       "commands": [
         "StartLessonOne"
       ],
@@ -298,34 +538,71 @@
         "LessonOneBranchCheckedOut"
       ],
       "read_models": [
-        "saved_first_launch_setup",
-        "lesson_one_screen"
+        "learner_setup_status"
       ],
+      "views": [],
       "trigger": "FirstLaunchSetupCompleted",
-      "then": [
-        "if normal checkout of lessons/lesson-1 succeeds, record LessonOneBranchCheckedOut with preparation_method normal_checkout",
-        "if normal checkout fails, show git-oriented error details and offer reset-hard recovery",
-        "if the learner accepts reset-hard recovery and it succeeds, record LessonOneBranchCheckedOut with preparation_method accepted_reset_hard_recovery",
-        "if branch preparation still fails or the learner declines recovery, do not record LessonOneBranchCheckedOut and keep the learner out of Lesson 1"
+      "scenarios": [
+        {
+          "name": "Normal checkout succeeds",
+          "given": [
+            "FirstLaunchSetupCompleted"
+          ],
+          "when": "StartLessonOne checks out lessons/lesson-1",
+          "then": [
+            "LessonOneBranchCheckedOut with preparation_method normal_checkout"
+          ]
+        },
+        {
+          "name": "Checkout succeeds after reset-hard recovery",
+          "given": [
+            "FirstLaunchSetupCompleted",
+            "normal checkout of lessons/lesson-1 failed and the learner accepted reset-hard recovery"
+          ],
+          "when": "StartLessonOne resets hard onto lessons/lesson-1",
+          "then": [
+            "LessonOneBranchCheckedOut with preparation_method accepted_reset_hard_recovery"
+          ]
+        },
+        {
+          "name": "Branch preparation cannot recover",
+          "given": [
+            "FirstLaunchSetupCompleted",
+            "normal checkout of lessons/lesson-1 failed and recovery was declined or also failed"
+          ],
+          "when": "StartLessonOne cannot prepare the lesson branch",
+          "then": [
+            "No LessonOneBranchCheckedOut event is recorded.",
+            "Eddy shows git-oriented error details and keeps the learner out of Lesson 1."
+          ]
+        }
       ]
     },
     {
       "type": "state_view",
-      "name": "Display Lesson 1 screen",
+      "name": "Show Lesson 1",
       "commands": [],
       "events": [
         "FirstLaunchSetupCompleted",
         "LessonOneBranchCheckedOut"
       ],
       "read_models": [
+        "lesson_one_context"
+      ],
+      "views": [
         "lesson_one_screen"
       ],
-      "given": [
-        "FirstLaunchSetupCompleted",
-        "LessonOneBranchCheckedOut"
-      ],
-      "then": [
-        "lesson_one_screen shows the learner's saved display name and lesson-1 content after the repository is on lessons/lesson-1"
+      "scenarios": [
+        {
+          "name": "Lesson 1 branch is ready",
+          "given": [
+            "FirstLaunchSetupCompleted",
+            "LessonOneBranchCheckedOut"
+          ],
+          "then": [
+            "lesson_one_screen shows the learner's saved display name and Lesson 1 content after the repository is on lessons/lesson-1."
+          ]
+        }
       ]
     }
   ]

@@ -26,6 +26,7 @@ Required everywhere:
 | SQLite development libraries | `3.x` | [SQLite download/install info](https://www.sqlite.org/download.html) |
 | `just` | `1.51.0` | [`just` installation](https://github.com/casey/just#installation) |
 | `jq` | `1.6` | [`jq` download/install info](https://jqlang.github.io/jq/download/) |
+| Node.js with `npm` | `22.x` | [Node.js downloads](https://nodejs.org/en/download) |
 
 Recommended development tools:
 
@@ -50,19 +51,19 @@ Install system packages first, then install Rust with `rustup`.
 Debian/Ubuntu:
 
 ```sh
-sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev libsqlite3-dev just jq libasound2-dev libfontconfig-dev libx11-dev libxcb1-dev libxcursor-dev libxi-dev libxkbcommon-dev libxrandr-dev libudev-dev libwayland-dev
+sudo apt-get update && sudo apt-get install -y build-essential pkg-config libssl-dev libsqlite3-dev just jq nodejs npm libasound2-dev libfontconfig-dev libx11-dev libxcb1-dev libxcursor-dev libxi-dev libxkbcommon-dev libxrandr-dev libudev-dev libwayland-dev
 ```
 
 Fedora:
 
 ```sh
-sudo dnf install -y gcc gcc-c++ make pkgconf-pkg-config openssl-devel sqlite-devel just jq alsa-lib-devel fontconfig-devel libX11-devel libxcb-devel libXcursor-devel libXi-devel libxkbcommon-devel libXrandr-devel systemd-devel wayland-devel
+sudo dnf install -y gcc gcc-c++ make pkgconf-pkg-config openssl-devel sqlite-devel just jq nodejs npm alsa-lib-devel fontconfig-devel libX11-devel libxcb-devel libXcursor-devel libXi-devel libxkbcommon-devel libXrandr-devel systemd-devel wayland-devel
 ```
 
 Arch Linux:
 
 ```sh
-sudo pacman -S --needed base-devel pkgconf openssl sqlite just jq alsa-lib fontconfig libx11 libxcb libxcursor libxi libxkbcommon libxrandr systemd-libs wayland
+sudo pacman -S --needed base-devel pkgconf openssl sqlite just jq nodejs npm alsa-lib fontconfig libx11 libxcb libxcursor libxi libxkbcommon libxrandr systemd-libs wayland
 ```
 
 Provider documentation:
@@ -72,6 +73,7 @@ Provider documentation:
 | Debian/Ubuntu packages | [Ubuntu packages](https://packages.ubuntu.com/) and [Debian packages](https://packages.debian.org/) |
 | Fedora packages | [Fedora package search](https://packages.fedoraproject.org/) |
 | Arch packages | [Arch package search](https://archlinux.org/packages/) |
+| Node.js | [Node.js downloads](https://nodejs.org/en/download) |
 | ALSA | [ALSA project](https://www.alsa-project.org/wiki/Main_Page) |
 | Fontconfig | [Fontconfig project](https://www.freedesktop.org/wiki/Software/fontconfig/) |
 | X11/XCB libraries | [X.Org](https://www.x.org/wiki/) and [XCB](https://xcb.freedesktop.org/) |
@@ -95,7 +97,7 @@ xcode-select --install
 Homebrew packages:
 
 ```sh
-brew install pkg-config openssl@3 sqlite just jq
+brew install pkg-config openssl@3 sqlite just jq node
 ```
 
 Provider documentation:
@@ -106,5 +108,26 @@ Provider documentation:
 | Homebrew packages | [Homebrew installation](https://brew.sh/) and [Homebrew formulae](https://formulae.brew.sh/) |
 | OpenSSL on Homebrew | [`openssl@3`](https://formulae.brew.sh/formula/openssl@3) |
 | SQLite on Homebrew | [`sqlite`](https://formulae.brew.sh/formula/sqlite) |
+| Node.js on Homebrew | [`node`](https://formulae.brew.sh/formula/node) |
 
 </details>
+
+## Event Model Browser
+
+Event-model workflow JSON files can be browsed with the React-based event model browser. Install its JavaScript dependencies once:
+
+```sh
+npm --prefix docs/event-model/browser install
+```
+
+Validate workflow models from the command line with the same TypeScript validation logic used by the browser:
+
+```sh
+npm --prefix docs/event-model/browser run validate
+```
+
+Generate the static browser under `docs/event-model/generated/browser/` with:
+
+```sh
+npm --prefix docs/event-model/browser run generate
+```
