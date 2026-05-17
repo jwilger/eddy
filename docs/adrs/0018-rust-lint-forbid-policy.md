@@ -2,7 +2,12 @@
 
 ## Status
 
-Accepted
+Superseded
+
+## Superseded By
+
+ADR 0020: Replaces the `clippy::all` group-level forbid decision with generated exact-lint enumeration plus a build-time drift check, while preserving the broader strict lint policy.
+
 
 ## Date
 

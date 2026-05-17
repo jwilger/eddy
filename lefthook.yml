@@ -2,10 +2,44 @@ pre-commit:
   commands:
     fmt:
       run: just fmt
+      glob:
+        - "*.rs"
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "rustfmt.toml"
+        - ".rustfmt.toml"
+        - "justfile"
+        - "lefthook.yml"
     clippy:
       run: just clippy
-
-pre-push:
-  commands:
+      glob:
+        - "*.rs"
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - ".cargo/*.toml"
+        - "scripts/sync-clippy-lints.mjs"
+        - "justfile"
+        - "lefthook.yml"
     test:
       run: just test
+      glob:
+        - "*.rs"
+        - "**/*.rs"
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - ".cargo/*.toml"
+        - "tests/*.mjs"
+        - "scripts/*.mjs"
+        - ".opencode/plugins/*.ts"
+        - "justfile"
+        - "lefthook.yml"
+    deny:
+      run: just deny
+      glob:
+        - "Cargo.toml"
+        - "Cargo.lock"
+        - "deny.toml"
+        - ".cargo/*.toml"
+        - "justfile"
+        - "lefthook.yml"

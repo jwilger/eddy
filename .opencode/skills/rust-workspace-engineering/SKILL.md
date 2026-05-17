@@ -15,11 +15,17 @@ Modify Rust package dependencies with Cargo package-manager commands such as `ca
 
 ## Code Conventions
 
-- Rust lint policy lives in `Cargo.toml` and should keep stable Clippy quality
-  groups at `forbid`, not merely `deny`. Enable `clippy::all` and
-  `clippy::cargo`; do not enable experimental `clippy::nursery`, subjective
-  `clippy::pedantic`, or the contradictory `clippy::restriction` group as
-  groups.
+- Rust lint policy lives in `Cargo.toml` and should keep the exact lints from
+  stable Clippy quality groups at `forbid`, not merely `deny`. Do not configure
+  `clippy::all` as a group-level `forbid`; keep the generated exact member list
+  in `[lints.clippy]` so third-party macro `allow` attributes cannot produce
+  `forbidden_lint_groups` warnings that bypass `-D warnings`. Keep
+  `clippy::cargo` enabled; do not enable experimental `clippy::nursery`,
+  subjective `clippy::pedantic`, or the contradictory `clippy::restriction`
+  group as groups.
+- `build.rs` runs `scripts/sync-clippy-lints.mjs --check` during Cargo builds.
+  If the pinned toolchain changes the `clippy::all` membership, run
+  `just sync-clippy-lints` and commit the resulting `Cargo.toml` update.
 - Exact `clippy::restriction` lints may be opted into at `forbid` when they
   support quality, test diagnostics, or LLM-friendly maintainability. Do not
   use the restriction group wholesale.

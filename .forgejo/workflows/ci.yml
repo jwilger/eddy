@@ -110,6 +110,23 @@ jobs:
           export PATH="/nix/var/nix/profiles/default/bin:$PATH"
           nix develop --command just deny
 
+  acceptance:
+    name: Acceptance
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - *install_nix
+
+      - name: Run just accept
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just accept
+
   build:
     name: Build
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
@@ -135,7 +152,7 @@ jobs:
   semantic-review:
     name: Request auto_review semantic review
     runs-on: ubuntu-24.04
-    needs: [fmt, clippy, test, deny, build]
+    needs: [fmt, clippy, test, deny, acceptance, build]
     if: ${{ github.event_name == 'pull_request' }}
     env:
       AUTO_REVIEW_GATEWAY_URL: ${{ secrets.AUTO_REVIEW_GATEWAY_URL }}

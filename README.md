@@ -43,6 +43,28 @@ Install the Rust toolchain and cargo helpers with:
 rustup toolchain install nightly --component rust-src,rustfmt,clippy && cargo install cargo-deny cargo-mutants cargo-nextest cargo-watch
 ```
 
+## Development Checks
+
+Run the unit-level test gate with:
+
+```sh
+just test
+```
+
+Run black-box Cucumber acceptance scenarios on demand with:
+
+```sh
+just accept
+```
+
+To narrow acceptance by feature file and/or scenario name, set `ACCEPT_FEATURES` to a space-separated list of feature paths and `ACCEPT_NAME` to the Cucumber scenario name:
+
+```sh
+ACCEPT_FEATURES=tests/features/first_launch_setup.feature ACCEPT_NAME='No setup exists yet' just accept
+```
+
+Acceptance scenarios run in CI, but the local Git hooks only run the faster pre-commit checks whose inputs are affected by the staged files.
+
 <details>
 <summary>Linux x86_64 / aarch64</summary>
 
@@ -130,4 +152,12 @@ Generate the static browser under `docs/event-model/generated/browser/` with:
 
 ```sh
 just event-model-generate
+```
+
+## Rust Lint Guardrail
+
+Cargo builds check that `Cargo.toml` enumerates the current `clippy::all` lint set exactly. If a Rust toolchain update changes that set, refresh the committed lint table with:
+
+```sh
+just sync-clippy-lints
 ```

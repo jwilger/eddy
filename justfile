@@ -7,9 +7,22 @@ fmt:
 clippy:
 	if [ -f Cargo.toml ]; then RUSTFLAGS='-Dwarnings' cargo clippy --all-targets --all-features -- -D warnings; else printf '%s\n' 'No Cargo.toml; skipping Rust clippy'; fi
 
+sync-clippy-lints:
+	node scripts/sync-clippy-lints.mjs --write
+
 test:
 	NODE_OPTIONS="--import=$PWD/scripts/fail-on-warning.mjs" node --test tests/*.test.mjs
 	if [ -f Cargo.toml ]; then RUSTFLAGS='-Dwarnings' cargo nextest run --no-tests pass; else printf '%s\n' 'No Cargo.toml; skipping Rust nextest'; fi
+
+# cucumber-rs uses a custom harness (`harness = false`) so nextest cannot
+# enumerate and filter this acceptance executable reliably; run the Cucumber
+# binary directly for both routine and focused acceptance coverage.
+accept:
+	if [ -f Cargo.toml ]; then RUSTFLAGS='-Dwarnings' cargo build --bin eddy && features="${ACCEPT_FEATURES:-}" && name="${ACCEPT_NAME:-}" && set --; for feature in $features; do set -- "$@" --input "$feature"; done; if [ -n "$name" ]; then set -- "$@" --name "$name"; fi; RUSTFLAGS='-Dwarnings' EDDY_ACCEPTANCE_BIN="$(cargo metadata --no-deps --format-version 1 | jq -r '.target_directory + "/debug/eddy"')" cargo run --example first_launch_setup_acceptance -- "$@"; else printf '%s\n' 'No Cargo.toml; skipping Cucumber acceptance tests'; fi
+
+test-first-launch-setup name='No setup exists yet':
+	RUSTFLAGS='-Dwarnings' cargo build --bin eddy
+	RUSTFLAGS='-Dwarnings' EDDY_ACCEPTANCE_BIN="$(cargo metadata --no-deps --format-version 1 | jq -r '.target_directory + "/debug/eddy"')" cargo run --example first_launch_setup_acceptance -- --name "{{name}}"
 
 deny:
 	if [ -f Cargo.toml ]; then cargo deny check; else printf '%s\n' 'No Cargo.toml; skipping cargo deny'; fi
@@ -36,4 +49,4 @@ hooks-pre-commit:
 hooks-pre-push:
 	lefthook run pre-push
 
-ci: fmt clippy test deny build
+ci: fmt clippy test accept deny build
