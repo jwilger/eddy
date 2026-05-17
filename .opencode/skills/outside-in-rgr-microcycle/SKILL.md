@@ -28,6 +28,8 @@ Next control owner:
 
 RED is valid when a focused command was run and produced an observed failure that is expected for the requested behavior. Compiler errors count as RED when the test intentionally pressures a missing API, missing type, or crate boundary.
 
+For event-model slices, the first focused command should run one black-box Cucumber scenario against the compiled, running program through the UI/process boundary. Lower-level REDs are valid only as drill-down cycles after that outer acceptance RED exists.
+
 RED must expose exactly one current failing test or one current diagnostic. If a command reports multiple failing tests, narrow the command or split the behavior before implementation.
 
 Fix test misuse before production edits. Do not treat accidental misuse of existing code as implementation pressure.
@@ -73,3 +75,5 @@ Report a blocked state when no focused command can be run, the failure output is
 ## Verification
 
 Run the narrow focused test first. Before handoff, run the strongest relevant gate feasible for the files changed and state any skipped gate with the reason.
+
+For event-model slices, return to the focused Cucumber scenario after any lower-level drill-down cycle and before reporting the slice as GREEN.

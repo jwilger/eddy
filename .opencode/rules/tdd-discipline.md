@@ -2,6 +2,8 @@
 
 Behavior production code requires one observed failing test first. RED evidence must show exactly one failing test or one intentional compiler/API diagnostic for the current behavior; multi-failure output is not valid RED.
 
+For event-model slices, the first RED is the user-facing acceptance behavior: write or activate a black-box Cucumber scenario that drives the compiled, running program through the UI/process boundary. Only drill down to lower-level Rust tests after that outer scenario exists and points to a specific internal diagnostic.
+
 Follow RED -> REVIEW -> GREEN -> REVIEW -> REFACTOR with the specialist RGR agents. Record RED, get RED approval, then make only the smallest production edit that changes the current diagnostic. After one behavioral production edit, rerun the focused command and record the changed RED or GREEN before editing again.
 
 Default code-writing handoff: use `rgr-test-author` to write or activate the next single RED, `rgr-test-reviewer` to approve RED before production edits, `rgr-diagnostic-implementer` to make one smallest GREEN edit for the named diagnostic and allowed immediate change, and `rgr-implementation-reviewer` to approve GREEN before refactor or broader verification. If GREEN review finds a missing behavior not covered by the passing test, return it to the orchestrator as the next RED instead of asking for untested implementation. The primary implementer orchestrates, keeps the ledger, and commits each approved GREEN/refactor checkpoint before starting the next RED.

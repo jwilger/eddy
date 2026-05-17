@@ -25,7 +25,7 @@ Stream:
 A consistency boundary and event sequence. In EventCore terms, this is where related events are appended and read for decisions requiring consistency.
 
 Slice:
-The smallest useful unit of behavior in the model. A slice should be understandable and testable on its own.
+The smallest useful unit of behavior in the model. A slice should be understandable and testable on its own. When implementing a slice in Eddy, default to proving it as user-visible UI behavior with a black-box Cucumber scenario against the compiled, running program unless the user explicitly narrows the boundary.
 
 ## Four Main Patterns
 
@@ -84,6 +84,8 @@ Use Given/Then for state views:
 For automations, usually model the trigger and resulting command/event flow, then add scenarios to the state view and state change portions.
 
 For translations, identify the external input, the internal command if any, and the internal event recorded after translation.
+
+When turning any slice into implementation work, translate the modeled scenario into an outer BDD scenario first: launch Eddy as a compiled program, drive the UI/process boundary as a user or external actor would, and assert on visible behavior or process-level effects. Use command/event/read-model tests only as drill-down support beneath that outer scenario.
 
 ## Common Corrections
 

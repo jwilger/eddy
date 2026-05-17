@@ -1,6 +1,6 @@
 ---
 name: outside-in-tdd
-description: RGR sequence, observed-failure evidence, drill-down unit tests, and non-behavioral exemptions for eddy.
+description: UI-first BDD for event-model slices, RGR sequence, observed-failure evidence, drill-down unit tests, and non-behavioral exemptions for eddy.
 ---
 
 # Outside-In TDD
@@ -11,9 +11,11 @@ Use this skill for behavior changes and bug fixes. This skill defines the discip
 
 Never write production behavior without one observed failing test demanding it. Multi-failure output is not valid RED; narrow the command or split the behavior until exactly one test or one intentional compiler/API diagnostic is failing.
 
+For an event-model slice, the demanding test starts at the black-box UI/process boundary: a Cucumber scenario runs the compiled program, drives the UI like a user, and asserts on visible behavior. Treat that scenario as the outer RED for the slice unless the user explicitly narrows the boundary.
+
 ## Sequence
 
-1. Name the behavior and the smallest externally visible test that should fail.
+1. Name the behavior and the smallest externally visible test that should fail. For event-model slices, this is the focused black-box Cucumber scenario against the compiled, running program.
 2. Dispatch `rgr-test-author` to write or activate that test, run the focused command, and capture real failing output.
 3. Dispatch `rgr-test-reviewer` to approve the RED evidence and API pressure before production edits.
 4. Record RED and RED approval with the RGR ledger tools before editing production behavior.
@@ -24,7 +26,7 @@ Never write production behavior without one observed failing test demanding it. 
 
 ## Drill-Down
 
-When an integration or acceptance failure points at internal logic, route the lower-level unit test through `rgr-test-author` and `rgr-test-reviewer`, observe it fail, use `rgr-diagnostic-implementer` for the minimum GREEN change, then return to the outer test.
+When the black-box Cucumber or other acceptance failure points at internal logic, route the lower-level unit test through `rgr-test-author` and `rgr-test-reviewer`, observe it fail, use `rgr-diagnostic-implementer` for the minimum GREEN change, then return to the outer test before declaring the slice green.
 
 ## Evidence
 
