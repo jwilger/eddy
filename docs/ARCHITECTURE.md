@@ -129,6 +129,8 @@ Useful harness capabilities will include:
 
 The test suite should use multiple layers rather than making all behavior tests end-to-end:
 
+Rust module unit tests live in same-directory sidecar files. For a module `foo.rs`, its unit tests belong in `foo_test.rs`, loaded from `foo.rs` with `#[cfg(test)]` and `#[path = "foo_test.rs"] mod tests;`. Broader integration, acceptance, and process-boundary tests remain in their integration or Cucumber-style locations.
+
 - Unit tests for pure Rust logic, EventCore command behavior, state reconstruction, and protocol compatibility checks
 - Validation tests for the machine-readable event model
 - Integration tests that spawn the server process, connect over HTTP loopback, and verify protocol behavior

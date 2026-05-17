@@ -36,7 +36,7 @@ Modify Rust package dependencies with Cargo package-manager commands such as `ca
 
 ## Tests
 
-Pure helpers get adjacent unit tests. HTTP integrations use `wiremock`. LLM behavior uses `CannedProvider` or `ScriptedProvider` fakes.
+Pure helpers get adjacent unit tests. For a Rust module `foo.rs`, place unit tests in a same-directory sidecar file `foo_test.rs` and load it from `foo.rs` with `#[cfg(test)]` plus `#[path = "foo_test.rs"] mod tests;`. HTTP integrations use `wiremock`. LLM behavior uses `CannedProvider` or `ScriptedProvider` fakes.
 
 ## User-Facing Changes
 
