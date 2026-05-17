@@ -15,6 +15,19 @@ Modify Rust package dependencies with Cargo package-manager commands such as `ca
 
 ## Code Conventions
 
+- Rust lint policy lives in `Cargo.toml` and should keep stable Clippy quality
+  groups at `forbid`, not merely `deny`. Enable `clippy::all` and
+  `clippy::cargo`; do not enable experimental `clippy::nursery`, subjective
+  `clippy::pedantic`, or the contradictory `clippy::restriction` group as
+  groups.
+- Exact `clippy::restriction` lints may be opted into at `forbid` when they
+  support quality, test diagnostics, or LLM-friendly maintainability. Do not
+  use the restriction group wholesale.
+- The only allowed project-wide downgrade from `forbid` to `deny` is for an
+  exact lint when a third-party macro emits an `allow` for that exact lint. If
+  this carve-out is needed, downgrade only the exact lint being allowed by the
+  macro, never a containing group, and document the reason next to the lint
+  setting.
 - No `unwrap()` or `expect()` outside `#[cfg(test)]`.
 - Use `?`, `anyhow::Context`, or explicit error variants.
 - Use `read_non_empty_env(name)` and `parse_env::<T>(name)` in `ar-gateway/src/main.rs`.

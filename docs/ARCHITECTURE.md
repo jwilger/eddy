@@ -142,6 +142,8 @@ Acceptance tests should cover the workflows users depend on most. They should no
 
 The repository already defines a Nix-based development environment. New development dependencies should be reflected there, and README setup instructions should be updated when those dependencies become required for normal development.
 
+Rust lint policy is part of the workspace configuration. Stable high-signal Clippy groups are enabled at `forbid`, not merely `deny`, with experimental `nursery`, subjective `pedantic`, and wholesale `restriction` groups left disabled. Exact restriction lints may be opted into at `forbid` when they support code quality, test diagnostics, or LLM-friendly maintainability. A project-wide downgrade to `deny` is allowed only for an exact lint when a third-party macro emits an `allow` for that same lint, and the reason must be documented next to the lint setting.
+
 The Rust-native testing decision avoids adding Node as a required test runtime at this stage. That keeps local development and CI simpler while the project is still establishing its core architecture.
 
 ## Open Design Areas

@@ -27,7 +27,7 @@ function isEditTool(toolID: string): boolean {
 
 function isProtectedAdrPath(filePath) {
   const normalized = (path.isAbsolute(filePath) ? path.relative(process.cwd(), filePath) : filePath).replaceAll("\\", "/");
-  return /^docs\/ADR-[^/]*\.md$/i.test(normalized) || normalized === "docs/ARCHITECTURE.md";
+  return /^docs\/adrs\/\d{4}-[^/]*\.md$/i.test(normalized) || normalized === "docs/ARCHITECTURE.md";
 }
 
 function patchTouchesProtectedAdrPath(args) {
@@ -67,7 +67,7 @@ function nextAdrNumber(docsDir) {
   let highest = 0;
   for (const entry of fs.readdirSync(docsDir, { withFileTypes: true })) {
     if (!entry.isFile()) continue;
-    const match = /^ADR-(\d+)-.*\.md$/i.exec(entry.name);
+    const match = /^(\d+)-.*\.md$/i.exec(entry.name);
     if (match) highest = Math.max(highest, Number.parseInt(match[1], 10));
   }
   return highest + 1;
@@ -132,7 +132,8 @@ function replaceAdrSection(text, section, value) {
 }
 
 function adrIdFromPath(adrPath) {
-  return /^ADR-(\d+)/.exec(path.basename(adrPath))?.[0] ?? path.basename(adrPath, ".md");
+  const number = /^(\d+)/.exec(path.basename(adrPath))?.[1];
+  return number ? `ADR ${number}` : path.basename(adrPath, ".md");
 }
 
 function requireAcceptedSupersedes(supersedes) {
@@ -159,7 +160,7 @@ function gitPathExistsOnMain(filePath) {
 }
 
 function isAdrDocumentPath(filePath) {
-  return /^docs\/ADR-[^/]*\.md$/i.test(filePath.replaceAll("\\", "/"));
+  return /^docs\/adrs\/\d{4}-[^/]*\.md$/i.test(filePath.replaceAll("\\", "/"));
 }
 
 function removeLinesReferencing(text, references) {
@@ -180,9 +181,11 @@ function cleanAdrReferences(deletedAdrPath, context) {
       recordTouchedFile(context.sessionID, architecturePath);
     }
   }
-  for (const entry of fs.readdirSync("docs", { withFileTypes: true })) {
-    if (!entry.isFile() || !/^ADR-.*\.md$/i.test(entry.name)) continue;
-    const adrPath = path.join("docs", entry.name);
+  const adrDir = "docs/adrs";
+  if (!fs.existsSync(adrDir)) return;
+  for (const entry of fs.readdirSync(adrDir, { withFileTypes: true })) {
+    if (!entry.isFile() || !/^\d{4}-.*\.md$/i.test(entry.name)) continue;
+    const adrPath = path.join(adrDir, entry.name);
     const current = fs.readFileSync(adrPath, "utf8");
     const updated = removeLinesReferencing(current, references);
     if (updated !== current) {
@@ -206,7 +209,7 @@ function isRgrTestAuthorTask(args: unknown): boolean {
   return (args as Record<string, unknown>).subagent_type === "rgr-test-author";
 }
 
-export const AutoReviewDisciplinePlugin: Plugin = async ({ worktree } = {}) => ({
+export const DisciplineGuardrailsPlugin: Plugin = async ({ worktree } = {}) => ({
   tool: {
     rgr_start: tool({
       description: "Start an eddy RED-GREEN-REFACTOR cycle for one behavior.",
@@ -296,13 +299,13 @@ export const AutoReviewDisciplinePlugin: Plugin = async ({ worktree } = {}) => (
         const decision = requireString(args, "decision");
         const consequences = requireString(args, "consequences");
         const date = requireString(args, "date");
-        const docsDir = "docs";
+        const docsDir = "docs/adrs";
         const number = nextAdrNumber(docsDir);
         const numberText = String(number).padStart(4, "0");
-        const adrPath = path.join(docsDir, `ADR-${numberText}-${titleSlug(title)}.md`);
+        const adrPath = path.join(docsDir, `${numberText}-${titleSlug(title)}.md`);
         const supersedes = Array.isArray(args.supersedes) ? args.supersedes : [];
         const supersedesSection = supersedes.length ? `\n## Supersedes\n\n${supersedes.map((entry) => `- ${requireString(entry, "path")}: ${requireString(entry, "reason")}`).join("\n")}\n` : "";
-        const body = `# ADR-${numberText}: ${title}\n\n## Status\n\nProposed\n\n## Date\n\n${date}\n\n## Context\n\n${adrContext}\n\n## Decision\n\n${decision}\n\n## Consequences\n\n${consequences}\n\n${proposedArchitecturePatchSection(args.architecturePatch)}${supersedesSection}`;
+        const body = `# ADR ${numberText}: ${title}\n\n## Status\n\nProposed\n\n## Date\n\n${date}\n\n## Context\n\n${adrContext}\n\n## Decision\n\n${decision}\n\n## Consequences\n\n${consequences}\n\n${proposedArchitecturePatchSection(args.architecturePatch)}${supersedesSection}`;
         requireAcceptedSupersedes(supersedes);
         fs.writeFileSync(adrPath, body);
         recordTouchedFile(context.sessionID, adrPath);
@@ -411,7 +414,7 @@ export const AutoReviewDisciplinePlugin: Plugin = async ({ worktree } = {}) => (
       async execute(args, context) {
         const adrPath = requireString(args, "path");
         if (!isAdrDocumentPath(adrPath)) {
-          throw new Error("adr_delete_unmerged only deletes docs/ADR-*.md paths");
+          throw new Error("adr_delete_unmerged only deletes docs/adrs/NNNN-*.md paths");
         }
         if (gitPathExistsOnMain(adrPath)) {
           throw new Error(`adr_delete_unmerged refuses to delete ${adrPath} because it exists on main`);
@@ -459,4 +462,4 @@ export const AutoReviewDisciplinePlugin: Plugin = async ({ worktree } = {}) => (
   },
 });
 
-export default AutoReviewDisciplinePlugin;
+export default DisciplineGuardrailsPlugin;

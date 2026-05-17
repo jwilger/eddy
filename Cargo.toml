@@ -3,5 +3,37 @@ name = "eddy"
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
+description = "An agentic coding harness for learning about LLM agents."
+repository = "https://git.johnwilger.com/Slipstream/eddy"
+keywords = ["agent", "llm", "tui"]
+categories = ["command-line-utilities", "development-tools"]
 
 [dependencies]
+
+# Clippy lint policy: enable the high-signal stable groups at `forbid` while
+# intentionally leaving experimental (`nursery`), subjective (`pedantic`), and
+# contradictory (`restriction`) groups disabled as groups. Selected restriction
+# lints below are exact opt-ins for quality, test diagnostics, and LLM-friendly
+# maintainability.
+#
+# If a third-party macro emits an `allow`, the only permitted project-wide
+# exception is changing that exact lint from `forbid` to `deny`; never downgrade
+# a containing group such as `clippy::all`, `clippy::cargo`, or
+# `clippy::restriction`.
+[lints.clippy]
+all = "forbid"
+cargo = "forbid"
+absolute_paths = "forbid"
+allow_attributes = "forbid"
+dbg_macro = "forbid"
+expect_used = "forbid"
+large_include_file = "forbid"
+missing_assert_message = "forbid"
+panic = "forbid"
+string_lit_chars_any = "forbid"
+tests_outside_test_module = "forbid"
+todo = "forbid"
+undocumented_unsafe_blocks = "forbid"
+unimplemented = "forbid"
+unwrap_used = "forbid"
+verbose_file_reads = "forbid"
