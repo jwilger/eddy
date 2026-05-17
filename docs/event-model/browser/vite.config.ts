@@ -8,5 +8,10 @@ export default defineConfig({
   build: {
     outDir: '../generated/browser',
     emptyOutDir: true,
+    rollupOptions: {
+      onwarn(warning) {
+        throw new Error(warning.message);
+      },
+    },
   },
 });

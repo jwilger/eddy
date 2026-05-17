@@ -1,4 +1,4 @@
-import type { CommandDefinition, EventDefinition, EventModel, ReadModel, Slice, Stream, ViewDefinition } from './types';
+import type { CommandDefinition, EventDefinition, ReadModel, Slice, Stream, ViewDefinition } from './types';
 
 export type ValidationSeverity = 'error' | 'warning';
 
@@ -49,7 +49,7 @@ export function validateEventModel(model: unknown): ValidationReport {
   const commandInputs = collectCommandInputs(commands);
   const commandReads = collectCommandReads(commands);
   const commandExternalInputs = collectCommandExternalInputs(commands);
-  const eventProducers = collectEventProducers(commands, eventNames, issues);
+  const eventProducers = collectEventProducers(commands, eventNames);
 
   validateEvents(events, streamNames, eventAttributes, eventProducers, commandInputs, commandReads, commandExternalInputs, issues);
   validateCommands(commands, readModelNames, eventNames, issues);
@@ -284,7 +284,7 @@ function collectCommandExternalInputs(commands: CommandDefinition[]): Map<string
   return new Map(commands.filter((command) => command.name).map((command) => [command.name, new Set(command.external_inputs ?? [])]));
 }
 
-function collectEventProducers(commands: CommandDefinition[], eventNames: Set<string>, issues: ValidationIssue[]): Map<string, Set<string>> {
+function collectEventProducers(commands: CommandDefinition[], eventNames: Set<string>): Map<string, Set<string>> {
   const result = new Map<string, Set<string>>();
   for (const command of commands) {
     if (!command.name) continue;
