@@ -9,13 +9,13 @@ Use the project-local opencode `event-modeler` agent to facilitate new modeling 
 Validate workflow models with:
 
 ```sh
-npm --prefix docs/event-model/browser run validate
+just event-model-validate
 ```
 
 Generate the event model browser with:
 
 ```sh
-npm --prefix docs/event-model/browser run generate
+just event-model-generate
 ```
 
 Do not add placeholder workflows or invented event vocabularies just to populate this directory. If a workflow has not been modeled with the user, leave it absent.

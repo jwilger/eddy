@@ -129,6 +129,8 @@ Useful harness capabilities will include:
 
 The test suite should use multiple layers rather than making all behavior tests end-to-end:
 
+Rust module unit tests live in same-directory sidecar files. For a module `foo.rs`, its unit tests belong in `foo_test.rs`, loaded from `foo.rs` with `#[cfg(test)]` and `#[path = "foo_test.rs"] mod tests;`. Broader integration, acceptance, and process-boundary tests remain in their integration or Cucumber-style locations.
+
 - Unit tests for pure Rust logic, EventCore command behavior, state reconstruction, and protocol compatibility checks
 - Validation tests for the machine-readable event model
 - Integration tests that spawn the server process, connect over HTTP loopback, and verify protocol behavior
@@ -141,6 +143,8 @@ Acceptance tests should cover the workflows users depend on most. They should no
 ## Tooling Direction
 
 The repository already defines a Nix-based development environment. New development dependencies should be reflected there, and README setup instructions should be updated when those dependencies become required for normal development.
+
+Rust lint policy is part of the workspace configuration. Stable high-signal Clippy groups are enabled at `forbid`, not merely `deny`, with experimental `nursery`, subjective `pedantic`, and wholesale `restriction` groups left disabled. Exact restriction lints may be opted into at `forbid` when they support code quality, test diagnostics, or LLM-friendly maintainability. A project-wide downgrade to `deny` is allowed only for an exact lint when a third-party macro emits an `allow` for that same lint, and the reason must be documented next to the lint setting.
 
 The Rust-native testing decision avoids adding Node as a required test runtime at this stage. That keeps local development and CI simpler while the project is still establishing its core architecture.
 

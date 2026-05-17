@@ -117,17 +117,17 @@ Provider documentation:
 Event-model workflow JSON files can be browsed with the React-based event model browser. Install its JavaScript dependencies once:
 
 ```sh
-npm --prefix docs/event-model/browser install
+just browser-install
 ```
 
 Validate workflow models from the command line with the same TypeScript validation logic used by the browser:
 
 ```sh
-npm --prefix docs/event-model/browser run validate
+just event-model-validate
 ```
 
 Generate the static browser under `docs/event-model/generated/browser/` with:
 
 ```sh
-npm --prefix docs/event-model/browser run generate
+just event-model-generate
 ```

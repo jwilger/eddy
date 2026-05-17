@@ -70,6 +70,7 @@
           buildInputs = commonBuildInputs;
           nativeBuildInputs = commonNativeBuildInputs;
         };
+
       in
       {
         packages = pkgs.lib.optionalAttrs hasCargoProject {
@@ -92,6 +93,7 @@
             forgejo-mcp
             jq
             just
+            lefthook
             nodejs
             openssl
             pkg-config

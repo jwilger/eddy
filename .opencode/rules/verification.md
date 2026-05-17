@@ -1,7 +1,9 @@
 # Verification
 
-Run the narrow test that proves the current RGR cycle before broader gates. Use `cargo nextest run -p <crate> <substring>` or an exact `cargo test` target for focused Rust tests.
+Run the narrow test that proves the current RGR cycle. Use `just` recipes for local test commands; Rust test recipes must run through nextest.
 
-For event-model slices, the narrow outer test is the focused Cucumber scenario against the compiled, running program. Run lower-level `cargo nextest` or `cargo test` commands only for drill-down cycles beneath that accepted outer RED, then return to the Cucumber scenario before declaring the slice green.
+For event-model slices, the narrow outer test is the focused Cucumber scenario against the compiled, running program. Run lower-level Rust tests only for drill-down cycles beneath that accepted outer RED, using a `just` recipe backed by nextest, then return to the Cucumber scenario before declaring the slice green.
 
-Before handoff, run the strongest relevant gate feasible for the change: `just fmt`, `just clippy`, `just test`, `just deny`, `just build`, or `just ci`. If a gate is skipped, state why.
+Do not duplicate full-suite verification that configured hooks or CI will already run. Pre-commit runs `just fmt` and `just clippy`; pre-push runs `just test`. After a focused check passes, skip those broader hook-covered gates by default and state that they are left to the hooks. Run a broader hook-covered gate only when the user asks for it, when preparing a push/PR that will not run the hook, or when the change directly edits that gate/tooling and a focused check is not enough.
+
+Before handoff, report the focused verification that was run and any broader gate intentionally skipped because hooks or CI cover it. Non-hook-covered gates such as `just deny`, `just build`, or `just ci` should still be run only when they are the narrow relevant proof for the change or the user explicitly requests them.

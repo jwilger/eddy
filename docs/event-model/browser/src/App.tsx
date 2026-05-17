@@ -25,11 +25,6 @@ import {
 import {
   IconAlertCircle,
   IconArrowRight,
-  IconBook,
-  IconBolt,
-  IconDatabase,
-  IconForms,
-  IconRoute,
   IconSparkles,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';

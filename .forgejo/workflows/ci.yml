@@ -1,0 +1,159 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  fmt:
+    name: Format check
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - &install_nix
+        name: Install or reuse Nix
+        run: |
+          set -euo pipefail
+          NIX_BIN_DIR="/nix/var/nix/profiles/default/bin"
+          if [ -x "$NIX_BIN_DIR/nix" ]; then
+            echo "Nix already present at $NIX_BIN_DIR (volume cache hit)"
+          else
+            echo "Installing Nix (cold start or fresh volume)"
+            curl --proto '=https' --tlsv1.2 -sSf -L \
+              https://install.determinate.systems/nix \
+              | sh -s -- install linux \
+                --init none \
+                --no-confirm \
+                --extra-conf "experimental-features = nix-command flakes" \
+                --extra-conf "accept-flake-config = true"
+          fi
+          # The persistent /nix volume retains the store and nix binary across
+          # runs, but fresh runner containers need the nixbld group/users that
+          # nix.conf references via build-users-group = nixbld.
+          if ! getent group nixbld > /dev/null; then
+            groupadd -r nixbld
+          fi
+          for i in $(seq 1 32); do
+            if ! id -u "nixbld$i" > /dev/null 2>&1; then
+              useradd -r -g nixbld -G nixbld -d /var/empty \
+                -s /usr/sbin/nologin -c "Nix build user $i" "nixbld$i"
+            fi
+          done
+          echo "$NIX_BIN_DIR" >> "$GITHUB_PATH"
+
+      - name: Run just fmt
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just fmt
+
+  clippy:
+    name: Clippy
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - *install_nix
+
+      - name: Run just clippy
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just clippy
+
+  test:
+    name: Test
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - *install_nix
+
+      - name: Install opencode plugin dependencies
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command npm --prefix .opencode ci
+
+      - name: Run just test
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just test
+
+  deny:
+    name: Dependency policy
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - *install_nix
+
+      - name: Run just deny
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just deny
+
+  build:
+    name: Build
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - *install_nix
+
+      - name: Install event model browser dependencies
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command npm --prefix docs/event-model/browser ci
+
+      - name: Run just build
+        run: |
+          export PATH="/nix/var/nix/profiles/default/bin:$PATH"
+          nix develop --command just build
+
+  semantic-review:
+    name: Request auto_review semantic review
+    runs-on: ubuntu-24.04
+    needs: [fmt, clippy, test, deny, build]
+    if: ${{ github.event_name == 'pull_request' }}
+    env:
+      AUTO_REVIEW_GATEWAY_URL: ${{ secrets.AUTO_REVIEW_GATEWAY_URL }}
+      AUTO_REVIEW_ACTION_TOKEN: ${{ secrets.AUTO_REVIEW_ACTION_TOKEN }}
+    steps:
+      - name: Skip when auto_review secrets are not configured
+        if: ${{ env.AUTO_REVIEW_GATEWAY_URL == '' || env.AUTO_REVIEW_ACTION_TOKEN == '' || env.AUTO_REVIEW_GATEWAY_URL == github.server_url }}
+        run: |
+          echo "auto_review semantic review skipped: AUTO_REVIEW_GATEWAY_URL must point at ar-gateway, AUTO_REVIEW_ACTION_TOKEN must be configured, and the gateway URL must not be the Forgejo server URL"
+
+      - name: Request auto_review review
+        continue-on-error: true
+        if: ${{ env.AUTO_REVIEW_GATEWAY_URL != '' && env.AUTO_REVIEW_ACTION_TOKEN != '' && env.AUTO_REVIEW_GATEWAY_URL != github.server_url }}
+        run: |
+          set -euo pipefail
+          json_payload='{"owner":"${{ github.repository_owner }}","repo":"${{ github.event.repository.name }}","pr_number":${{ github.event.pull_request.number }},"head_sha":"${{ github.event.pull_request.head.sha }}"}'
+          curl -fsS --connect-timeout 5 --max-time 30 -X POST \
+            -H "Authorization: Bearer $AUTO_REVIEW_ACTION_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "$json_payload" \
+            "${AUTO_REVIEW_GATEWAY_URL%/}/reviews/ci"
