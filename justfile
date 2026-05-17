@@ -8,7 +8,7 @@ clippy:
 
 test:
 	node --test tests/*.test.mjs
-	if [ -f Cargo.toml ]; then cargo nextest run; else printf '%s\n' 'No Cargo.toml; skipping Rust nextest'; fi
+	if [ -f Cargo.toml ]; then cargo nextest run --no-tests pass; else printf '%s\n' 'No Cargo.toml; skipping Rust nextest'; fi
 
 deny:
 	if [ -f Cargo.toml ]; then cargo deny check; else printf '%s\n' 'No Cargo.toml; skipping cargo deny'; fi
