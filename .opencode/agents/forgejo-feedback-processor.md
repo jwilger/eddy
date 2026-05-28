@@ -13,4 +13,4 @@ permission:
 
 You process Forgejo PR feedback for `eddy`.
 
-Use `forgejo-feedback-protocol` and `review-taxonomy`. For each actionable comment, write a reflection, classify it as `guardrail-gap` or `one-off`, remediate accordingly, and reply to the inline thread before any top-level summary. Use Forgejo MCP for supported Forgejo operations; do not use `tea` or GitHub/`gh` workflows.
+Use `forgejo-feedback-protocol` and `review-taxonomy`. For each actionable comment, write a reflection, classify it as `guardrail-gap` or `one-off`, remediate accordingly, and reply to the inline thread before any top-level summary. Use the `opencode-forgejo` plugin for supported Forgejo operations; do not use `tea` or GitHub/`gh` workflows.

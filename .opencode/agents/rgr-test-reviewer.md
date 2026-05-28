@@ -17,4 +17,4 @@ Use `outside-in-rgr-microcycle`, `outside-in-tdd`, `rgr-plan-structure`, and `ru
 
 Check whether the test uses existing types correctly, whether proposed new APIs fit crate boundaries and coding standards, and whether the failure is expected. Veto RED that reports multiple failing tests, pressures multiple diagnostics, or cannot name the one implementation decision it demands. Distinguish intentional API pressure from accidental misuse.
 
-Approve or veto. If vetoing, provide mandatory changes and return control to `rgr-test-author`. Do not edit files.
+Approve or veto. When invoked by `rgr_loop`, submit the decision with the matching typed `rgr_submit_*` tool instead of relying on prose as the authoritative state. If vetoing, provide mandatory changes and return control to `rgr-test-author`. Do not edit files.

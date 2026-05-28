@@ -5,7 +5,7 @@ description: UI-first BDD for event-model slices, RGR sequence, observed-failure
 
 # Outside-In TDD
 
-Use this skill for behavior changes and bug fixes. This skill defines the discipline; the specialist RGR agents perform the writing and review handoffs. Prefer the full `outside-in-rgr-microcycle` workflow whenever code will be written.
+Use this skill for behavior changes and bug fixes. This skill defines the discipline; the `opencode-rgr-loop` plugin should perform the normal orchestration through `rgr_loop` and typed phase submissions. The specialist RGR agents are the fallback path when the plugin is unavailable or cannot fit the task.
 
 ## Rule
 
@@ -15,14 +15,15 @@ For an event-model slice, the demanding test starts at the black-box UI/process 
 
 ## Sequence
 
-1. Name the behavior and the smallest externally visible test that should fail. For event-model slices, this is the focused black-box Cucumber scenario against the compiled, running program.
+0. Prefer `rgr_loop` with a BDD-style behavioral specification and treat its typed submissions as the authoritative RGR ledger.
+1. For fallback manual orchestration, name the behavior and the smallest externally visible test that should fail. For event-model slices, this is the focused black-box Cucumber scenario against the compiled, running program.
 2. Dispatch `rgr-test-author` to write or activate that test, run the focused command, and capture real failing output.
 3. Dispatch `rgr-test-reviewer` to approve the RED evidence and API pressure before production edits.
-4. Record RED and RED approval with the RGR ledger tools before editing production behavior.
+4. Record RED evidence and RED approval in the handoff before editing production behavior.
 5. Dispatch `rgr-diagnostic-implementer` with the current diagnostic and allowed immediate change; it implements only the minimum code that changes that diagnostic.
-6. Run the focused test after that edit. If the failure changes, record the new RED and repeat review/implementation for that diagnostic. If it passes, record GREEN.
+6. Run the focused test after that edit. If the failure changes, record the new RED in the handoff and repeat review/implementation for that diagnostic. If it passes, record GREEN.
 7. Dispatch `rgr-implementation-reviewer` to approve the GREEN diff before refactor or broader verification.
-8. Refactor only while tests are green and reviewer-approved, then record REFACTOR and commit the approved checkpoint before the next RED.
+8. Refactor only while tests are green and reviewer-approved, then commit the approved checkpoint before the next RED.
 
 ## Drill-Down
 
