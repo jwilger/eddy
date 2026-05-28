@@ -5,7 +5,7 @@ description: Fine-grained outside-in RED-GREEN-REFACTOR microcycles with special
 
 # Outside-In RGR Microcycle
 
-Use this skill when `/outside-in-rgr` is orchestrating one behavior through specialist-agent handoffs.
+Use this skill when `rgr_loop` or `/outside-in-rgr` is orchestrating one behavior through RED-GREEN-REFACTOR. Under `rgr_loop`, typed `rgr_submit_*` submissions are the authoritative ledger; the visible ledger below is for manual fallback and human-readable handoff context.
 
 ## Ledger
 
@@ -36,7 +36,7 @@ Fix test misuse before production edits. Do not treat accidental misuse of exist
 
 ## Test Review
 
-Send every new or activated RED test to `rgr-test-reviewer` before production edits, then record approval with `rgr_approve_red`. A reviewer veto blocks implementation until the test author addresses the mandatory notes and records a new RED.
+Send every new or activated RED test to `rgr-test-reviewer` before production edits. Under `rgr_loop`, the reviewer must submit its decision with the matching typed submission tool. In manual fallback, record the approval in the handoff. A reviewer veto blocks implementation until the test author addresses the mandatory notes and records a new RED.
 
 ## Single Diagnostic
 
@@ -54,7 +54,7 @@ GREEN means the focused command for the current test passes after the smallest d
 
 ## Implementation Review
 
-After GREEN, send the production diff to `rgr-implementation-reviewer`. A reviewer veto blocks refactor, broader verification, and handoff until the implementer addresses mandatory notes about minimality, type correctness, error handling, security boundaries, crate patterns, or style. If the reviewer finds a missing behavior not covered by the GREEN test, it returns to the orchestrator as a new RED instead of becoming an untested implementation request.
+After GREEN, send the production diff to `rgr-implementation-reviewer`. Under `rgr_loop`, the reviewer must submit its decision with the matching typed submission tool. A reviewer veto blocks refactor, broader verification, and handoff until the implementer addresses mandatory notes about minimality, type correctness, error handling, security boundaries, crate patterns, or style. If the reviewer finds a missing behavior not covered by the GREEN test, it returns to the orchestrator as a new RED instead of becoming an untested implementation request.
 
 ## REFACTOR
 

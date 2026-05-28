@@ -5,7 +5,7 @@ description: Write implementation plans as test-addressed red-green-refactor cyc
 
 # RGR Plan Structure
 
-Use this skill before writing plans, todo lists, PR checklists, or session outlines for behavior work.
+Use this skill before writing plans, todo lists, PR checklists, or session outlines for behavior work. For implementation plans that will be executed now, prefer handing the BDD-style behavior to `rgr_loop` instead of expanding a manual component checklist.
 
 ## Good Plans
 
