@@ -9,7 +9,7 @@ Use this skill for every actionable PR review comment.
 
 ## Process
 
-1. Fetch review comments with the Forgejo MCP, using review/comment tools or the MCP review API recipe as needed.
+1. Fetch review comments with the `opencode-forgejo` plugin's `forgejo_pr_overview` tool.
 2. For each item, write a short reflection: why was the correct thing not done first?
 3. Classify as `guardrail-gap` or `one-off` using `review-taxonomy`.
 4. Remediate the code or guardrail according to the classification.
@@ -17,7 +17,7 @@ Use this skill for every actionable PR review comment.
 
 ## Inline Reply Rule
 
-Forgejo threads replies by review, path, and diff position. Prefer the Forgejo MCP inline-reply helper/review tools. For an inline reply payload, post to the existing review comments endpoint with:
+Forgejo threads replies by review, path, and diff position. Prefer the `opencode-forgejo` plugin's `forgejo_reply_inline_review` tool. If you must fall back to the raw API, post to the existing review comments endpoint with:
 
 ```json
 {

@@ -6,7 +6,7 @@ import test from "node:test";
 
 import { DisciplineGuardrailsPlugin } from "../.opencode/plugins/discipline-guardrails.ts";
 
-test("blocks rgr-test-author task delegation when no RGR cycle is active", async () => {
+test("allows rgr-test-author task delegation because rgr_loop owns RGR gating", async () => {
   const hooks = await DisciplineGuardrailsPlugin({ worktree: process.cwd() });
   const output = {
     args: {
@@ -15,12 +15,11 @@ test("blocks rgr-test-author task delegation when no RGR cycle is active", async
     },
   };
 
-  await assert.rejects(
+  await assert.doesNotReject(
     hooks["tool.execute.before"](
       { tool: "task", sessionID: "session-without-rgr-cycle" },
       output,
     ),
-    /RGR task gate: start an RGR cycle with rgr_start before delegating to rgr-test-author; recover by starting the cycle or asking the orchestrator to do so\./,
   );
 });
 

@@ -22,4 +22,4 @@ Use `outside-in-rgr-microcycle`, `outside-in-tdd`, and `rust-workspace-engineeri
 
 Run the narrow focused command, capture the exact RED output, and explain why the single failure is expected. Treat compiler errors as valid RED when the test intentionally pressures a missing API or type. Fix only test misuse of existing code; do not edit production code.
 
-Return ledger-ready output with the command, observed failure, expected reason, and next reviewer handoff.
+When invoked by `rgr_loop`, submit the result with the matching typed `rgr_submit_*` tool instead of relying on prose as the authoritative state. Otherwise, return ledger-ready output with the command, observed failure, expected reason, and next reviewer handoff.
