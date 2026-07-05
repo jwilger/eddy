@@ -542,7 +542,7 @@ zombie_processes = "forbid"
 zst_offset = "forbid"
 
 [dev-dependencies]
-anyhow = "1.0.102"
+anyhow = "1.0.103"
 cucumber = "0.23.0"
 portable-pty = "0.9.0"
 tempfile = "3.27.0"
