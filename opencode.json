@@ -56,15 +56,6 @@
           "allowUnknown": false
         }
       }
-    ],
-    [
-      "opencode-forgejo@0.1.0",
-      {
-        "baseUrl": "https://git.johnwilger.com",
-        "tokenEnv": "FORGEJO_TOKEN",
-        "owner": "Slipstream",
-        "repo": "eddy"
-      }
     ]
   ],
   "lsp": {

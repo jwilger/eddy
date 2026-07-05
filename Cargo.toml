@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
 description = "An agentic coding harness for learning about LLM agents."
-repository = "https://git.johnwilger.com/Slipstream/eddy"
+repository = "https://github.com/jwilger/eddy"
 keywords = ["agent", "llm", "tui"]
 categories = ["command-line-utilities", "development-tools"]
 

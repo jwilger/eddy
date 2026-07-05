@@ -1,9 +1,9 @@
 ---
-description: Prepare a scoped Forgejo PR with explicit-path staging and conventional commit checks.
+description: Prepare a scoped GitHub PR with explicit-path staging and conventional commit checks.
 agent: build
 ---
 
-Prepare a Forgejo PR for: $ARGUMENTS
+Prepare a GitHub PR for: $ARGUMENTS
 
 Workflow:
 
@@ -11,6 +11,6 @@ Workflow:
 2. Stage only explicit paths; do not use `git add .`, `git add -A`, `git add -u`, or `git commit -a`.
 3. Check commit titles follow conventional commits; the release PR generates changelog notes from conventional commits.
 4. Verify relevant gates.
-5. Push the branch with `git`, then create the PR with the `opencode-forgejo` plugin's `forgejo_create_pr` using owner `Slipstream`, repo `eddy`, head `<branch>`, base `main`, title, and body.
+5. Push the branch with `git`, then create the PR with `gh pr create --repo jwilger/eddy --head <branch> --base main --title <title> --body <body>`.
 
-Use the `opencode-forgejo` plugin for supported Forgejo operations. Do not use `tea` or `gh` for PR creation in this repo.
+Use `gh` for GitHub pull request operations in this repo.
